@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<zone{{#version?}} version="{{value}}"{{/version}}{{#target?}} target="{{value}}"{{/target}}>
+  <short>{{short}}</short>
+  <description>{{description}}</description>
+{{#interface}}
+  <interface name="{{.}}"/>
+{{/interface}}
+{{#source}}
+  <source address="{{.}}"/>
+{{/source}}
+{{#service}}
+  <service name="{{.}}"/>
+{{/service}}
+{{#port}}
+  <port port="{{port}}" protocol="{{protocol}}"/>
+{{/port}}
+{{#icmp-block}}
+  <icmp-block name="{{.}}"/>  
+{{/icmp-block}}
+{{#masquerade?}}
+  <masquerade/>
+{{/masquerade}}
+{{#forward-port}}
+  <forward-port port="{{port}}" protocol="{{protocol}}"{{#to-port?}} to-port="{{port}}"{{/to-port}}{{#to-addr?}} to-addr="{{address}}"{{/to-addr}}/>
+{{/forward-port}}
+{{#rule}}
+  <rule{{#family?}} family="{{value}}"{{/family}}>
+{{#source?}}
+    <source address="{{address}}"{{#invert}} invert="True"{{/invert}}/>
+{{/source}}
+{{#destination?}}
+    <destination address={{address}}"{{#invert}} invert="True"{{/invert}}/>
+{{/destination}}
+{{#service?}}
+    <service name="{{name}}"/>
+{{/service}}
+{{#port?}}
+    <port port="{{port}}" protocol="{{protocol}}"/>
+{{/port}}
+{{#protocol?}}
+    <protocol value="{{value}}"/>
+{{/protocol}}
+{{#icmp-block?}}
+    <icmp-block name="{{name}}"/>
+{{/icmp-block}}
+{{#masquerade?}}
+    <masquerade/>
+{{/masquerade}}
+{{#forward-port?}}
+    <forward-port port="{{port}}" protocol="{{protocol}}"{{#to-port?}} to-port="{{port}}"{{/to-port}}{{#to-addr?}} to-addr="{{address}}"{{/to-addr}}/>
+{{/forward-port}}
+{{#log?}}
+    <log{{#prefix?}} prefix="{{value}}"{{/prefix}}{{#level?}} level="{{value}}"{{/level}}{{^limit?}}/{{/limit}}>
+{{#limit?}}
+      <limit value="{{value}}"/>
+    </log>
+{{/limit}}
+{{/log}}
+{{#audit?}}
+    <audit>{{#limit?}} <limit value="{{value}}"/> {{/limit}}</audit>
+{{/audit}}
+{{#accept}}
+    <accept/>
+{{/accept}}
+{{#drop}}
+    <drop/>
+{{/drop}}
+{{#reject?}}
+    <reject{{#type?}} type="{{type}}"{{/type}}/>
+{{/reject}}
+  </rule>
+{{/rule}}
+</zone>

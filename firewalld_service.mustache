@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service{{#version?}} version="{{value}}"{{/version}}>
+  <short>{{short}}</short>
+  <description>{{description}}</description>
+{{#port}}
+  <port port="{{port}}" protocol="{{protocol}}"/>
+{{/port}}
+{{#module}}
+  <module name="{{.}}"/>
+{{/module}}
+{{#destination?}}
+  <destination {{#ipv4?}}ipv4="{{value}}"{{/ipv4}}{{#ipv6?}} ipv6="{{value}}"{{/ipv6}}/>
+{{/destination}}
+</service>

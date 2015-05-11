@@ -1,0 +1,159 @@
+body common control
+{
+      inputs => { "/tmp/masterfiles/lib/3.6/files.cf", "./firewalld.cf" };
+      bundlesequence => { "firewalld" };
+}
+
+bundle agent firewalld
+{
+  methods:
+    any::
+      "service" usebundle => example_firewalld_service;
+      "zone"    usebundle => example_firewalld_zone;
+}
+
+
+bundle agent example_firewalld_service
+{
+  vars:
+      "example_service1"
+          string => '{
+                       "short": "Example Service1",
+                       "description": "Example service 1",
+                       "port": [
+                                 { "protocol": "tcp", "port": "1234" },
+				 ],
+                    }';
+
+      "example_service2"
+          string => '{
+                       "short": "Example Service2",
+                       "description": "Example service 2",
+                       "port": [
+                                 { "protocol": "tcp", "port": "1234" },
+                                 { "protocol": "udp", "port": "1234" },
+                                 { "protocol": "tcp", "port": "5678" },
+				 ],
+		       "module": [ "nf_conntrack", "nf_nat" ],
+                     }';
+
+      "example_service3"
+          string => '{
+                       "short": "Example Service3",
+                       "description": "Example service 3",
+                       "port": [
+                                 { "protocol": "udp", "port": "162" },
+				 ],
+		       "destination?": {
+					 "ipv4?": { "value": "10.0.0.123" },
+					 "ipv6?": { "value": "aaaa:bbbb::123" },
+				       }
+                     }';
+
+  methods:
+      "any" usebundle => create_firewalld_service("example_service1", $(example_service1));
+      "any" usebundle => create_firewalld_service("example_service2", $(example_service2));
+      "any" usebundle => create_firewalld_service("example_service3", $(example_service3));
+}
+
+bundle agent example_firewalld_zone
+{
+  vars:
+      "example_zone1"
+          string => '{
+                      "short": "Example Zone1",
+                      "description": "Example Zone 1",
+                      "source": [
+                                 "10.0.0.123",
+                                 "192.168.0.0/24",
+                                ],
+                      "service": [
+                                  "ssh",
+                                  "example_service1",
+                                 ]
+                    }';
+
+      "example_zone2"
+          string => '{
+                       "short": "Example Zone1",
+                       "description": "Example Zone 1",
+		       "masquerade?": true,
+                    }';
+
+      "example_zone3"
+          string => '{
+                       "short": "Example Zone3",
+                       "description": "Example Zone 3",
+		       "target?": { "value": "ACCEPT" },
+                       "source": [
+                                 "10.10.0.0/16",
+                                 "10.20.184.0/21",
+                                 "10.36.155.0/24",
+                                 "10.36.4.0/24",
+                                 "10.36.5.0/24",
+                                 "10.157.176.12/32",
+                                 "10.39.8.40/32",
+                                ],
+                       "service": [
+                                    "ssh",
+                                    "http",
+                                    "https",
+                                    ]
+		       "interface": [ "eth0", "bond0" ],
+		       "port": [
+				 { "port": "100-200", "protocol": "udp" },
+				 { "port": "1234", "protocol": "tcp" },
+				 ]
+		       "icmp-block": [
+				       "echo-request",
+				       "router-advertisement",
+				       ],
+		       "forward-port": [
+					 { "port": "1234", "protocol": "tcp",
+					   "to-port?": { "port": "1000" },
+					   "to-addr?": { "address": "10.0.0.1" },
+					 },
+					 { "port": "5678", "protocol": "tcp" },
+					 ],
+                    }';
+
+      "example_zone4"
+          string => '{
+                       "short": "Example Zone4",
+                       "description": "Example Zone 4",
+                       "source": [
+                                   "10.0.0.0/16",
+				   "192.168.0.0/24",
+                                   ],
+                       "rule": [
+				 {
+				   "source?": { "address": "10.10.10.10/24", "invert": true },
+				   "destination?": { "address": "192.168.0.0/24", "invert": false },
+				   "service?": { "name": "https" },
+				   "audit?": { "limit?": { "value": "9999" } },
+				   "accept": true,
+				 },
+				 {
+				   "source?": { "address": "10.10.10.123" },
+				   "forward-port?": {
+                                                      "port": "8888",
+                                                      "protocol": "tcp",
+                                                      "to-port?": { "port": "9999" },
+                                                      "to-addr?": { "address": "192.168.0.123" },
+                                                    }
+                                   "log?": {
+                                             "prefix?": { "value": "foo" },
+                                             "level?": { "value": "debug" },
+					     "limit?": { "value": "1000" },
+                                           }
+				   "audit?": true,
+				 },
+				 ]
+                     }';
+
+  methods:
+      "any" usebundle => create_firewalld_zone("example_zone1", $(example_zone1));
+      "any" usebundle => create_firewalld_zone("example_zone2", $(example_zone2));
+      "any" usebundle => create_firewalld_zone("example_zone3", $(example_zone3));
+      "any" usebundle => create_firewalld_zone("example_zone4", $(example_zone4));
+}
