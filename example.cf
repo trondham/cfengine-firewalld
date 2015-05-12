@@ -8,11 +8,27 @@ bundle agent firewalld
 {
   methods:
     any::
+      "config"  usebundle => example_firewalld_conf;
       "service" usebundle => example_firewalld_service;
       "zone"    usebundle => example_firewalld_zone;
       "direct"  usebundle => example_firewalld_direct;
 }
 
+bundle agent example_firewalld_conf
+{
+  vars:
+      "my_configuration"
+          string => '{
+		       "default_zone":    "public",
+		       "minimal_mark":    "100",
+		       "cleanup_on_exit": "yes",
+		       "lock_down":       "no",
+		       "ipv6_rpfilter":   "yes",
+		     }';
+
+  methods:
+      "any" usebundle => firewalld_configuration($(my_configuration));
+}
 
 bundle agent example_firewalld_service
 {

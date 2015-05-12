@@ -123,3 +123,26 @@ bundle agent delete_firewalld_direct
     repaired_firewalld::
       "/bin/echo /usr/bin/firewall-cmd --reload";
 }
+
+#
+# Manage firewalld.conf
+#
+bundle agent firewalld_configuration(data)
+{
+  files:
+      #"/etc/firewalld/firewalld.conf"
+      "/tmp/firewalld.conf"
+          create          => "true",
+          handle          => "configured_firewalld",
+          perms           => mog("0644","$(this.promiser_uid)","$(this.promiser_gid)"),
+          edit_template   => "$(this.promise_dirname)/firewalld_conf.mustache",
+          template_method => "mustache",
+          template_data   => parsejson("$(data)"),
+          classes         => if_repaired("restart_firewalld"),
+          pathtype        => "literal",
+          comment         => "Configure firewalld.conf";
+
+  commands:
+    repaired_firewalld::
+      "/bin/echo /sbin/service firewalld restart";
+}
