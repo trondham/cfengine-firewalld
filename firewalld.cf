@@ -5,6 +5,8 @@ bundle common firewalld_config
                                    "/etc/firewalld/services");
       "service_directory" string => "$(directory)/services";
       "zone_directory" string => "$(directory)/zones";
+      "exec_prefix" string => ifelse("TEST", "/bin/echo ",
+                                    "");
 }
 
 #
@@ -26,7 +28,7 @@ bundle agent create_firewalld_service(name,data)
 
   commands:
     repaired_firewalld::
-      "/bin/echo /usr/bin/firewall-cmd --reload";
+      "$(firewalld_config.exec_prefix)/usr/bin/firewall-cmd --reload";
 }
 
 #
@@ -44,7 +46,7 @@ bundle agent delete_firewalld_service(name)
 
   commands:
     repaired_firewalld::
-      "/bin/echo /usr/bin/firewall-cmd --reload";
+      "$(firewalld_config.exec_prefix)/usr/bin/firewall-cmd --reload";
 }
 
 #
@@ -66,7 +68,7 @@ bundle agent create_firewalld_zone(name,data)
 
   commands:
     repaired_firewalld::
-      "/bin/echo /usr/bin/firewall-cmd --reload";
+      "$(firewalld_config.exec_prefix)/usr/bin/firewall-cmd --reload";
 }
 
 #
@@ -84,7 +86,7 @@ bundle agent delete_firewalld_zone(name)
 
   commands:
     repaired_firewalld::
-      "/bin/echo /usr/bin/firewall-cmd --reload";
+      "$(firewalld_config.exec_prefix)/usr/bin/firewall-cmd --reload";
 }
 
 #
@@ -106,7 +108,7 @@ bundle agent create_firewalld_direct(data)
 
   commands:
     repaired_firewalld::
-      "/bin/echo /usr/bin/firewall-cmd --reload";
+      "$(firewalld_config.exec_prefix)/usr/bin/firewall-cmd --reload";
 }
 
 #
@@ -124,7 +126,7 @@ bundle agent delete_firewalld_direct
 
   commands:
     repaired_firewalld::
-      "/bin/echo /usr/bin/firewall-cmd --reload";
+      "$(firewalld_config.exec_prefix)/usr/bin/firewall-cmd --reload";
 }
 
 #
@@ -146,5 +148,5 @@ bundle agent firewalld_configuration(data)
 
   commands:
     repaired_firewalld::
-      "/bin/echo /sbin/service firewalld restart";
+      "$(firewalld_config.exec_prefix)/sbin/service firewalld restart";
 }
