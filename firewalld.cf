@@ -1,11 +1,19 @@
+bundle common firewalld_config
+{
+  vars:
+      "directory" string => ifelse("TEST", "/tmp/firewalld",
+                                  "/etc/firewalld/services");
+      "service_directory" string => "$(directory)/services";
+      "zone_directory" string => "$(directory)/zones";
+}
+
 #
 # Create a firewalld service
 #
 bundle agent create_firewalld_service(name,data)
 {
   files:
-      #"/etc/firewalld/services/$(name).xml"
-      "/tmp/$(name).xml"
+      "$(firewalld_config.service_directory)/$(name).xml"
           create          => "true",
           handle          => "created_firewalld_$(name)_service",
           pathtype        => "literal",
@@ -13,7 +21,7 @@ bundle agent create_firewalld_service(name,data)
           perms           => mog("0640","$(this.promiser_uid)","$(this.promiser_gid)"),
           classes         => if_repaired("repaired_firewalld"),
           template_method => "mustache",
-          template_data   => parsejson("$(data)"),
+          template_data   => mergedata(data),
           comment         => "Create firewalld service '$(name)'";
 
   commands:
@@ -27,8 +35,7 @@ bundle agent create_firewalld_service(name,data)
 bundle agent delete_firewalld_service(name)
 {
   files:
-      #"/etc/firewalld/services/$(name).xml"
-      "/tmp/$(name).xml"
+      "$(firewalld_config.service_directory)/$(name).xml"
           delete   => tidy,
           handle   => "deleted_firewalld_$(name)_service",
           pathtype => "literal",
@@ -46,8 +53,7 @@ bundle agent delete_firewalld_service(name)
 bundle agent create_firewalld_zone(name,data)
 {
   files:
-      #"/etc/firewalld/zones/$(name).xml"
-      "/tmp/$(name).xml"
+      "$(firewalld_config.zone_directory)/$(name).xml"
           create          => "true",
           handle          => "created_firewalld_$(name)_zone",
           pathtype        => "literal",
@@ -55,7 +61,7 @@ bundle agent create_firewalld_zone(name,data)
           perms           => mog("0640","$(this.promiser_uid)","$(this.promiser_gid)"),
           classes         => if_repaired("repaired_firewalld"),
           template_method => "mustache",
-          template_data   => parsejson("$(data)"),
+          template_data   => mergedata(data),
           comment         => "Create firewalld zone '$(name)'";
 
   commands:
@@ -69,8 +75,7 @@ bundle agent create_firewalld_zone(name,data)
 bundle agent delete_firewalld_zone(name)
 {
   files:
-      #"/etc/firewalld/zones/$(name).xml"
-      "/tmp/$(name).xml"
+      "$(firewalld_config.zone_directory)/$(name).xml"
           delete   => tidy,
           handle   => "deleted_firewalld_$(name)_zone",
           pathtype => "literal",
@@ -88,8 +93,7 @@ bundle agent delete_firewalld_zone(name)
 bundle agent create_firewalld_direct(data)
 {
   files:
-      #"/etc/firewalld/direct.xml"
-      "/tmp/direct.xml"
+      "$(firewalld_config.directory)/direct.xml"
           create          => "true",
           handle          => "created_firewalld_direct.xml",
           pathtype        => "literal",
@@ -97,7 +101,7 @@ bundle agent create_firewalld_direct(data)
           perms           => mog("0640","$(this.promiser_uid)","$(this.promiser_gid)"),
           classes         => if_repaired("repaired_firewalld"),
           template_method => "mustache",
-          template_data   => parsejson("$(data)"),
+          template_data   => mergedata(data),
           comment         => "Create firewalld direct.xml";
 
   commands:
@@ -111,8 +115,7 @@ bundle agent create_firewalld_direct(data)
 bundle agent delete_firewalld_direct
 {
   files:
-      #"/etc/firewalld/direct.xml"
-      "/tmp/direct.xml"
+      "$(firewalld_config.directory)/direct.xml"
           delete   => tidy,
           handle   => "deleted_firewalld_direct",
           pathtype => "literal",
@@ -130,14 +133,13 @@ bundle agent delete_firewalld_direct
 bundle agent firewalld_configuration(data)
 {
   files:
-      #"/etc/firewalld/firewalld.conf"
-      "/tmp/firewalld.conf"
+      "$(firewalld_config.directory)/firewalld.conf"
           create          => "true",
           handle          => "configured_firewalld",
           perms           => mog("0644","$(this.promiser_uid)","$(this.promiser_gid)"),
           edit_template   => "$(this.promise_dirname)/templates/firewalld_conf.mustache",
           template_method => "mustache",
-          template_data   => parsejson("$(data)"),
+          template_data   => mergedata(data),
           classes         => if_repaired("repaired_firewalld"),
           pathtype        => "literal",
           comment         => "Configure firewalld.conf";

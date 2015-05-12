@@ -1,13 +1,20 @@
 body common control
 {
-      inputs => { "/tmp/masterfiles/lib/3.6/files.cf", "./firewalld.cf" };
+      inputs => { "$(sys.libdir)/stdlib.cf", "$(includes.dir)/firewalld.cf" };
       bundlesequence => { "firewalld" };
+}
+
+bundle common includes
+{
+  vars:
+      "dir" string => $(this.promise_dirname);
 }
 
 bundle agent firewalld
 {
   methods:
     any::
+      "prep"    usebundle => firewalld_config;
       "config"  usebundle => example_firewalld_conf;
       "service" usebundle => example_firewalld_service;
       "zone"    usebundle => example_firewalld_zone;
@@ -18,32 +25,32 @@ bundle agent example_firewalld_conf
 {
   vars:
       "my_configuration"
-          string => '{
+          data => parsejson('{
 		       "default_zone":    "public",
 		       "minimal_mark":    "100",
 		       "cleanup_on_exit": "yes",
 		       "lock_down":       "no",
 		       "ipv6_rpfilter":   "yes",
-		     }';
+		     }');
 
   methods:
-      "any" usebundle => firewalld_configuration($(my_configuration));
+      "any" usebundle => firewalld_configuration(@(my_configuration));
 }
 
 bundle agent example_firewalld_service
 {
   vars:
       "example_service1"
-          string => '{
+          data => parsejson('{
                        "short": "Example Service1",
                        "description": "Example service 1",
                        "port": [
                                  { "protocol": "tcp", "port": "1234" },
 				 ],
-                    }';
+                    }');
 
       "example_service2"
-          string => '{
+          data => parsejson('{
                        "short": "Example Service2",
                        "description": "Example service 2",
                        "port": [
@@ -52,10 +59,10 @@ bundle agent example_firewalld_service
                                  { "protocol": "tcp", "port": "5678" },
 				 ],
 		       "module": [ "nf_conntrack", "nf_nat" ],
-                     }';
+                     }');
 
       "example_service3"
-          string => '{
+          data => parsejson('{
                        "short": "Example Service3",
                        "description": "Example service 3",
                        "port": [
@@ -65,19 +72,19 @@ bundle agent example_firewalld_service
 					 "ipv4?": { "value": "10.0.0.123" },
 					 "ipv6?": { "value": "aaaa:bbbb::123" },
 				       }
-                     }';
+                     }');
 
   methods:
-      "any" usebundle => create_firewalld_service("example_service1", $(example_service1));
-      "any" usebundle => create_firewalld_service("example_service2", $(example_service2));
-      "any" usebundle => create_firewalld_service("example_service3", $(example_service3));
+      "any" usebundle => create_firewalld_service("example_service1", @(example_service1));
+      "any" usebundle => create_firewalld_service("example_service2", @(example_service2));
+      "any" usebundle => create_firewalld_service("example_service3", @(example_service3));
 }
 
 bundle agent example_firewalld_zone
 {
   vars:
       "example_zone1"
-          string => '{
+          data => parsejson('{
                       "short": "Example Zone1",
                       "description": "Example Zone 1",
                       "source": [
@@ -88,17 +95,17 @@ bundle agent example_firewalld_zone
                                   "ssh",
                                   "example_service1",
                                  ]
-                    }';
+                    }');
 
       "example_zone2"
-          string => '{
+          data => parsejson('{
                        "short": "Example Zone1",
                        "description": "Example Zone 1",
 		       "masquerade?": true,
-                    }';
+                    }');
 
       "example_zone3"
-          string => '{
+          data => parsejson('{
                        "short": "Example Zone3",
                        "description": "Example Zone 3",
 		       "target?": { "value": "ACCEPT" },
@@ -132,10 +139,10 @@ bundle agent example_firewalld_zone
 					 },
 					 { "port": "5678", "protocol": "tcp" },
 					 ],
-                    }';
+                    }');
 
       "example_zone4"
-          string => '{
+          data => parsejson('{
                        "short": "Example Zone4",
                        "description": "Example Zone 4",
                        "source": [
@@ -166,20 +173,20 @@ bundle agent example_firewalld_zone
 				   "audit?": true,
 				 },
 				 ]
-                     }';
+                     }');
 
   methods:
-      "any" usebundle => create_firewalld_zone("example_zone1", $(example_zone1));
-      "any" usebundle => create_firewalld_zone("example_zone2", $(example_zone2));
-      "any" usebundle => create_firewalld_zone("example_zone3", $(example_zone3));
-      "any" usebundle => create_firewalld_zone("example_zone4", $(example_zone4));
+      "any" usebundle => create_firewalld_zone("example_zone1", @(example_zone1));
+      "any" usebundle => create_firewalld_zone("example_zone2", @(example_zone2));
+      "any" usebundle => create_firewalld_zone("example_zone3", @(example_zone3));
+      "any" usebundle => create_firewalld_zone("example_zone4", @(example_zone4));
 }
 
 bundle agent example_firewalld_direct
 {
   vars:
       "example_direct"
-          string => '{
+          data => parsejson('{
                        "chain": [{
 				   "ipv": "ipv4",
 				   "table": "raw",
@@ -221,8 +228,8 @@ bundle agent example_firewalld_direct
 					 "ipv": "ipv6",
 					 "args": "-s aaaa:bbbb::/40 -j ACCEPT",
 				       },],
-                    }';
+                    }');
 
   methods:
-      "any" usebundle => create_firewalld_direct($(example_direct));
+      "any" usebundle => create_firewalld_direct(@(example_direct));
 }
