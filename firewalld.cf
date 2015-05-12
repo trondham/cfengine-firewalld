@@ -138,7 +138,7 @@ bundle agent firewalld_configuration(data)
           edit_template   => "$(this.promise_dirname)/templates/firewalld_conf.mustache",
           template_method => "mustache",
           template_data   => parsejson("$(data)"),
-          classes         => if_repaired("restart_firewalld"),
+          classes         => if_repaired("repaired_firewalld"),
           pathtype        => "literal",
           comment         => "Configure firewalld.conf";
 
