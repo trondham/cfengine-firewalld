@@ -25,13 +25,13 @@ bundle agent example_firewalld_conf
 {
   vars:
       "my_configuration"
-          data => parsejson('{
+      data => parsejson('{
 		       "default_zone":    "public",
 		       "minimal_mark":    "100",
 		       "cleanup_on_exit": "yes",
 		       "lock_down":       "no",
 		       "ipv6_rpfilter":   "yes",
-		     }');
+      }');
 
   methods:
       "any" usebundle => firewalld_configuration(@(my_configuration));
@@ -41,16 +41,16 @@ bundle agent example_firewalld_service
 {
   vars:
       "example_service1"
-          data => parsejson('{
+      data => parsejson('{
                        "short": "Example Service1",
                        "description": "Example service 1",
                        "port": [
                                  { "protocol": "tcp", "port": "1234" },
 				 ],
-                    }');
+      }');
 
       "example_service2"
-          data => parsejson('{
+      data => parsejson('{
                        "short": "Example Service2",
                        "description": "Example service 2",
                        "port": [
@@ -59,10 +59,10 @@ bundle agent example_firewalld_service
                                  { "protocol": "tcp", "port": "5678" },
 				 ],
 		       "module": [ "nf_conntrack", "nf_nat" ],
-                     }');
+      }');
 
       "example_service3"
-          data => parsejson('{
+      data => parsejson('{
                        "short": "Example Service3",
                        "description": "Example service 3",
                        "port": [
@@ -71,8 +71,8 @@ bundle agent example_firewalld_service
 		       "destination?": {
 					 "ipv4?": { "value": "10.0.0.123" },
 					 "ipv6?": { "value": "aaaa:bbbb::123" },
-				       }
-                     }');
+		       }
+      }');
 
   methods:
       "any" usebundle => create_firewalld_service("example_service1", @(example_service1));
@@ -84,7 +84,7 @@ bundle agent example_firewalld_zone
 {
   vars:
       "example_zone1"
-          data => parsejson('{
+      data => parsejson('{
                       "short": "Example Zone1",
                       "description": "Example Zone 1",
                       "source": [
@@ -95,17 +95,17 @@ bundle agent example_firewalld_zone
                                   "ssh",
                                   "example_service1",
                                  ]
-                    }');
+      }');
 
       "example_zone2"
-          data => parsejson('{
+      data => parsejson('{
                        "short": "Example Zone1",
                        "description": "Example Zone 1",
 		       "masquerade?": true,
-                    }');
+      }');
 
       "example_zone3"
-          data => parsejson('{
+      data => parsejson('{
                        "short": "Example Zone3",
                        "description": "Example Zone 3",
 		       "target?": { "value": "ACCEPT" },
@@ -139,10 +139,10 @@ bundle agent example_firewalld_zone
 					 },
 					 { "port": "5678", "protocol": "tcp" },
 					 ],
-                    }');
+      }');
 
       "example_zone4"
-          data => parsejson('{
+      data => parsejson('{
                        "short": "Example Zone4",
                        "description": "Example Zone 4",
                        "source": [
@@ -164,16 +164,16 @@ bundle agent example_firewalld_zone
                                                       "protocol": "tcp",
                                                       "to-port?": { "port": "9999" },
                                                       "to-addr?": { "address": "192.168.0.123" },
-                                                    }
+                                   }
                                    "log?": {
                                              "prefix?": { "value": "foo" },
                                              "level?": { "value": "debug" },
 					     "limit?": { "value": "1000" },
-                                           }
+                                   }
 				   "audit?": true,
 				 },
 				 ]
-                     }');
+      }');
 
   methods:
       "any" usebundle => create_firewalld_zone("example_zone1", @(example_zone1));
@@ -186,19 +186,19 @@ bundle agent example_firewalld_direct
 {
   vars:
       "example_direct"
-          data => parsejson('{
+      data => parsejson('{
                        "chain": [{
 				   "ipv": "ipv4",
 				   "table": "raw",
 				   "chain": "blacklist",
-				 },],
+		       },],
 		       "rule": [{
 				  "ipv": "ipv4",
 				  "table": "raw",
 				  "chain": "PREROUTING",
 				  "priority": "0",
 				  "args": "-s 192.168.1.0/24 -j blacklist",
-				},
+		       },
 				{
 				  "ipv": "ipv4",
 				  "table": "raw",
@@ -223,12 +223,12 @@ bundle agent example_firewalld_direct
 		       "passthrough": [{
 					 "ipv": "ipv4",
 					 "args": "-s 10.0.0.0/24 -j ACCEPT",
-				       },
+		       },
 				       {
 					 "ipv": "ipv6",
 					 "args": "-s aaaa:bbbb::/40 -j ACCEPT",
 				       },],
-                    }');
+      }');
 
   methods:
       "any" usebundle => create_firewalld_direct(@(example_direct));
