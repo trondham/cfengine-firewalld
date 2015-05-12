@@ -10,6 +10,7 @@ bundle agent firewalld
     any::
       "service" usebundle => example_firewalld_service;
       "zone"    usebundle => example_firewalld_zone;
+      "direct"  usebundle => example_firewalld_direct;
 }
 
 
@@ -156,4 +157,56 @@ bundle agent example_firewalld_zone
       "any" usebundle => create_firewalld_zone("example_zone2", $(example_zone2));
       "any" usebundle => create_firewalld_zone("example_zone3", $(example_zone3));
       "any" usebundle => create_firewalld_zone("example_zone4", $(example_zone4));
+}
+
+bundle agent example_firewalld_direct
+{
+  vars:
+      "example_direct"
+          string => '{
+                       "chain": [{
+				   "ipv": "ipv4",
+				   "table": "raw",
+				   "chain": "blacklist",
+				 },],
+		       "rule": [{
+				  "ipv": "ipv4",
+				  "table": "raw",
+				  "chain": "PREROUTING",
+				  "priority": "0",
+				  "args": "-s 192.168.1.0/24 -j blacklist",
+				},
+				{
+				  "ipv": "ipv4",
+				  "table": "raw",
+				  "chain": "PREROUTING",
+				  "priority": "1",
+				  "args": "-s 192.168.5.0/24 -j blacklist",
+				},
+				{
+				  "ipv": "ipv4",
+				  "table": "raw",
+				  "chain": "blacklist",
+				  "priority": "0",
+				  "args": "-m limit --limit 1/min -j LOG --log-prefix \\"blacklisted: \\"",
+				},
+				{
+				  "ipv": "ipv4",
+				  "table": "raw",
+				  "chain": "blacklist",
+				  "priority": "1",
+				  "args": "-j DROP",
+				},],
+		       "passthrough": [{
+					 "ipv": "ipv4",
+					 "args": "-s 10.0.0.0/24 -j ACCEPT",
+				       },
+				       {
+					 "ipv": "ipv6",
+					 "args": "-s aaaa:bbbb::/40 -j ACCEPT",
+				       },],
+                    }';
+
+  methods:
+      "any" usebundle => create_firewalld_direct($(example_direct));
 }

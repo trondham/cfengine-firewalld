@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<direct>
+{{#chain}}
+  <chain ipv="{{ipv}}" table="{{table}}" chain="{{chain}}"/>
+{{/chain}}
+{{#rule}}
+  <rule ipv="{{ipv}}" table="{{table}}" chain="{{chain}}" priority="{{priority}}>{{{args}}}</rule>
+{{/rule}}
+{{#passthrough}}
+  <passthrough ipv="{{ipv}}">{{{args}}}</passthrough>
+{{/passthrough}}
+</direct>
