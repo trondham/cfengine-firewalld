@@ -14,11 +14,12 @@ bundle agent firewalld
 {
   methods:
     any::
-      "prep"    usebundle => firewalld_config;
-      "config"  usebundle => example_firewalld_conf;
-      "service" usebundle => example_firewalld_service;
-      "zone"    usebundle => example_firewalld_zone;
-      "direct"  usebundle => example_firewalld_direct;
+      "prep"      usebundle => firewalld_config;
+      "config"    usebundle => example_firewalld_conf;
+      "service"   usebundle => example_firewalld_service;
+      "zone"      usebundle => example_firewalld_zone;
+      "direct"    usebundle => example_firewalld_direct;
+      "whitelist" usebundle => example_firewalld_lockdown_whitelist;
 }
 
 bundle agent example_firewalld_conf
@@ -232,4 +233,25 @@ bundle agent example_firewalld_direct
 
   methods:
       "any" usebundle => create_firewalld_direct(@(example_direct));
+}
+
+bundle agent example_firewalld_lockdown_whitelist
+{
+  vars:
+      "example_whitelist"
+      data => parsejson('{
+		       "selinux": [
+				    "system_u:system_r:NetworkManager_t:s0",
+				    "system_u:system_r:cupsd_t:s0"
+				    ],
+		       "command": [
+				    "/usr/bin/python /usr/bin/firewall-cmd*",
+				    "/usr/sbin/httpd -DFOREGROUND"
+				    ],
+		       "user-name": [ "apache", "zabbix", "postfix" ],
+		       "user-id": [ "26" ]
+      }');
+
+  methods:
+      "any" usebundle => create_firewalld_lockdown_whitelist(@(example_whitelist));
 }

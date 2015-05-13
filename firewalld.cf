@@ -130,6 +130,46 @@ bundle agent delete_firewalld_direct
 }
 
 #
+# Create a firewalld lockdown-whitelist
+#
+bundle agent create_firewalld_lockdown_whitelist(data)
+{
+  files:
+      "$(firewalld_config.directory)/lockdown-whitelist.xml"
+      create          => "true",
+      handle          => "created_firewalld_lockdown-whitelist.xml",
+      pathtype        => "literal",
+      edit_template   => "$(this.promise_dirname)/templates/firewalld_lockdown-whitelist.mustache",
+      perms           => mog("0640","$(this.promiser_uid)","$(this.promiser_gid)"),
+      classes         => if_repaired("repaired_firewalld"),
+      template_method => "mustache",
+      template_data   => mergedata(data),
+      comment         => "Create firewalld lockdown-whitelist.xml";
+
+  commands:
+    repaired_firewalld::
+      "$(firewalld_config.exec_prefix)/usr/bin/firewall-cmd --reload";
+}
+
+#
+# Delete a firewalld lockdown-whitelist
+#
+bundle agent delete_firewalld_lockdown_whitelist
+{
+  files:
+      "$(firewalld_config.directory)/lockdown-whitelist.xml"
+      delete   => tidy,
+      handle   => "deleted_firewalld_lockdown-whitelist",
+      pathtype => "literal",
+      classes  => if_repaired("repaired_firewalld"),
+      comment  => "Delete firewalld lockdown-whitelist.xml";
+
+  commands:
+    repaired_firewalld::
+      "$(firewalld_config.exec_prefix)/usr/bin/firewall-cmd --reload";
+}
+
+#
 # Manage firewalld.conf
 #
 bundle agent firewalld_configuration(data)

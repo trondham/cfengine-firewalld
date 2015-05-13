@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<whitelist>
+{{#selinux}}
+  <selinux context="{{{.}}}"/>
+{{/selinux}}
+{{#command}}
+  <command name="{{{.}}}"/>
+{{/command}}
+{{#user-name}}
+  <user name="{{{.}}}"/>
+{{/user-name}}
+{{#user-id}}
+  <user id="{{{.}}}"/>
+{{/user-id}}
+</whitelist>
