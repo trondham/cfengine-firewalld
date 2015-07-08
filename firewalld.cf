@@ -7,6 +7,8 @@ bundle common firewalld_config
       "zone_directory" string => "$(directory)/zones";
       "exec_prefix" string => ifelse("TEST", "/bin/echo ",
                                     "");
+      "template_directory" string => ifelse("TEST", "$(this.promise_dirname)/templates",
+                                            "$(sys.workdir)/templates");
 }
 
 #
@@ -19,7 +21,7 @@ bundle agent create_firewalld_service(name,data)
       create          => "true",
       handle          => "created_firewalld_$(name)_service",
       pathtype        => "literal",
-      edit_template   => "$(this.promise_dirname)/templates/service.xml.mustache",
+      edit_template   => "$(firewalld_config.template_directory)/service.xml.mustache",
       perms           => mog("0640","$(this.promiser_uid)","$(this.promiser_gid)"),
       classes         => if_repaired("repaired_firewalld"),
       template_method => "mustache",
@@ -59,7 +61,7 @@ bundle agent create_firewalld_zone(name,data)
       create          => "true",
       handle          => "created_firewalld_$(name)_zone",
       pathtype        => "literal",
-      edit_template   => "$(this.promise_dirname)/templates/zone.xml.mustache",
+      edit_template   => "$(firewalld_config.template_directory)/zone.xml.mustache",
       perms           => mog("0640","$(this.promiser_uid)","$(this.promiser_gid)"),
       classes         => if_repaired("repaired_firewalld"),
       template_method => "mustache",
@@ -99,7 +101,7 @@ bundle agent create_firewalld_direct(data)
       create          => "true",
       handle          => "created_firewalld_direct.xml",
       pathtype        => "literal",
-      edit_template   => "$(this.promise_dirname)/templates/direct.xml.mustache",
+      edit_template   => "$(firewalld_config.template_directory)/direct.xml.mustache",
       perms           => mog("0640","$(this.promiser_uid)","$(this.promiser_gid)"),
       classes         => if_repaired("repaired_firewalld"),
       template_method => "mustache",
@@ -139,7 +141,7 @@ bundle agent create_firewalld_lockdown_whitelist(data)
       create          => "true",
       handle          => "created_firewalld_lockdown-whitelist.xml",
       pathtype        => "literal",
-      edit_template   => "$(this.promise_dirname)/templates/lockdown-whitelist.xml.mustache",
+      edit_template   => "$(firewalld_config.template_directory)/lockdown-whitelist.xml.mustache",
       perms           => mog("0640","$(this.promiser_uid)","$(this.promiser_gid)"),
       classes         => if_repaired("repaired_firewalld"),
       template_method => "mustache",
@@ -179,7 +181,7 @@ bundle agent firewalld_configuration(data)
       create          => "true",
       handle          => "configured_firewalld",
       perms           => mog("0644","$(this.promiser_uid)","$(this.promiser_gid)"),
-      edit_template   => "$(this.promise_dirname)/templates/firewalld.conf.mustache",
+      edit_template   => "$(firewalld_config.template_directory)/firewalld.conf.mustache",
       template_method => "mustache",
       template_data   => mergedata(data),
       classes         => if_repaired("repaired_firewalld"),
