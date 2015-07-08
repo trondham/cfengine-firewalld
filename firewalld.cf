@@ -2,7 +2,7 @@ bundle common firewalld_config
 {
   vars:
       "directory" string => ifelse("TEST", "/tmp/firewalld",
-                                   "/etc/firewalld/services");
+                                   "/etc/firewalld");
       "service_directory" string => "$(directory)/services";
       "zone_directory" string => "$(directory)/zones";
       "exec_prefix" string => ifelse("TEST", "/bin/echo ",
