@@ -12,31 +12,10 @@ bundle common firewalld_config
 }
 
 #
-# Dist a template to local template repo
-#
-bundle agent dist_firewalld_template(file)
-{
-  files:
-      "$(firewalld_config.template_directory)/$(file)"
-      copy_from => repocopy("templates/$(file)"),
-      action    => immediate,
-      pathtype  => "literal",
-      comment   => "Dist template '$(file)' to local templates repo";
-}
-
-#
 # Create a firewalld service
 #
 bundle agent create_firewalld_service(name,data)
 {
-  methods:
-      # Dist service.xml template
-    !TEST::
-      "dist_firewalld_template_service_xml"
-      usebundle => dist_firewalld_template("service.xml.mustache"),
-      handle    => "disted_firewalld_template_service.xml.mustache",
-      comment   => "Call bundle to dist firewalld service.xml template to local repo";
-
   files:
       # Generate firewalld service from template
       "$(firewalld_config.service_directory)/$(name).xml"
@@ -78,14 +57,6 @@ bundle agent delete_firewalld_service(name)
 #
 bundle agent create_firewalld_zone(name,data)
 {
-  methods:
-      # Dist zone.xml template
-    !TEST::
-      "dist_firewalld_template_zone_xml"
-      usebundle => dist_firewalld_template("zone.xml.mustache"),
-      handle    => "disted_firewalld_template_zone.xml.mustache",
-      comment   => "Call bundle to dist firewalld zone.xml template to local repo";
-
   files:
       # Generate firewalld zone from template
       "$(firewalld_config.zone_directory)/$(name).xml"
@@ -127,14 +98,6 @@ bundle agent delete_firewalld_zone(name)
 #
 bundle agent create_firewalld_direct(data)
 {
-  methods:
-      # Dist direct.xml template
-    !TEST::
-      "dist_firewalld_template_direct_xml"
-      usebundle => dist_firewalld_template("direct.xml.mustache"),
-      handle    => "disted_firewalld_template_direct.xml.mustache",
-      comment   => "Call bundle to dist firewalld direct.xml template to local repo";
-
   files:
       # Generate firewalld direct configuration file from template
       "$(firewalld_config.directory)/direct.xml"
@@ -176,14 +139,6 @@ bundle agent delete_firewalld_direct
 #
 bundle agent create_firewalld_lockdown_whitelist(data)
 {
-  methods:
-      # Dist lockdown-whitelist.xml template
-    !TEST::
-      "dist_firewalld_template_lockdown_whitelist_xml"
-      usebundle => dist_firewalld_template("lockdown-whitelist.xml.mustache"),
-      handle    => "disted_firewalld_template_lockdown-whitelist.xml.mustache",
-      comment   => "Call bundle to dist firewalld lockdown-whitelist.xml template to local repo";
-
   files:
       # Generate firewalld lockdown whitelist configuration file from template
       "$(firewalld_config.directory)/lockdown-whitelist.xml"
@@ -225,14 +180,6 @@ bundle agent delete_firewalld_lockdown_whitelist
 #
 bundle agent firewalld_configuration(data)
 {
-  methods:
-      # Dist firewalld.conf template
-    !TEST::
-      "dist_firewalld_template_firewalld_conf"
-      usebundle => dist_firewalld_template("firewalld.conf.mustache"),
-      handle    => "disted_firewalld_template_firewalld.conf.mustache",
-      comment   => "Call bundle to dist firewalld.conf template to local repo";
-
   files:
       # Generate firewalld configuration file from template
       "$(firewalld_config.directory)/firewalld.conf"
