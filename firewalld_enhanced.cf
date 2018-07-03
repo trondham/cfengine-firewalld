@@ -1,0 +1,249 @@
+bundle common firewalld_config
+{
+  vars:
+      "directory" string => ifelse("TEST", "/tmp/firewalld",
+                                   "/etc/firewalld");
+      "service_directory" string => "$(directory)/services";
+      "zone_directory" string => "$(directory)/zones";
+      "exec_prefix" string => ifelse("TEST", "/bin/echo ",
+                                    "");
+      "template_directory" string => ifelse("TEST", "$(this.promise_dirname)/templates",
+                                            "$(sys.workdir)/inputs/zone/template/etc/firewalld");
+}
+
+#
+# Create a firewalld service
+#
+bundle agent create_firewalld_service(name,data)
+{
+  files:
+      # Generate firewalld service from template
+      "$(firewalld_config.service_directory)/$(name).xml"
+      create          => "true",
+      handle          => "created_firewalld_$(name)_service",
+      pathtype        => "literal",
+      edit_template   => "$(firewalld_config.template_directory)/service.xml.mustache",
+      perms           => mog("0640","$(this.promiser_uid)","$(this.promiser_gid)"),
+      classes         => if_repaired("repaired_firewalld"),
+      template_method => "mustache",
+      template_data   => mergedata(data),
+      comment         => "Create firewalld service '$(name)'";
+
+  commands:
+    repaired_firewalld::
+      "$(firewalld_config.exec_prefix)/usr/bin/firewall-cmd -q --reload; /usr/bin/firewall-cmd -q --zone=public --permanent --add-service=$(name); /usr/bin/firewall-cmd -q --reload"
+      contain => shell_firewalld_json_command;
+}
+
+#
+# Delete a firewalld service
+#
+bundle agent delete_firewalld_service(name)
+{
+  files:
+      "$(firewalld_config.service_directory)/$(name).xml"
+      delete   => tidy,
+      handle   => "deleted_firewalld_$(name)_service",
+      pathtype => "literal",
+      classes  => if_repaired("repaired_firewalld"),
+      comment  => "Delete firewalld service '$(name)'";
+
+  commands:
+    repaired_firewalld::
+      "$(firewalld_config.exec_prefix)/usr/bin/firewall-cmd -q --reload; /usr/bin/firewall-cmd -q --zone=public --permanent --remove-service=$(name); /usr/bin/firewall-cmd -q --reload"
+      contain => shell_firewalld_json_command;
+}
+
+#
+# Create a firewalld zone
+#
+bundle agent create_firewalld_zone(name,data)
+{
+  files:
+      # Generate firewalld zone from template
+      "$(firewalld_config.zone_directory)/$(name).xml"
+      create          => "true",
+      handle          => "created_firewalld_$(name)_zone",
+      pathtype        => "literal",
+      edit_template   => "$(firewalld_config.template_directory)/zone.xml.mustache",
+      perms           => mog("0640","$(this.promiser_uid)","$(this.promiser_gid)"),
+      classes         => if_repaired("repaired_firewalld"),
+      template_method => "mustache",
+      template_data   => mergedata(data),
+      comment         => "Create firewalld zone '$(name)'";
+
+  commands:
+    repaired_firewalld::
+      "$(firewalld_config.exec_prefix)/usr/bin/firewall-cmd -q --reload"
+      contain => shell_firewalld_json_command;
+}
+
+#
+# Delete a firewalld zone
+#
+bundle agent delete_firewalld_zone(name)
+{
+  files:
+      "$(firewalld_config.zone_directory)/$(name).xml"
+      delete   => tidy,
+      handle   => "deleted_firewalld_$(name)_zone",
+      pathtype => "literal",
+      classes  => if_repaired("repaired_firewalld"),
+      comment  => "Delete firewalld zone '$(name)'";
+
+  commands:
+    repaired_firewalld::
+      "$(firewalld_config.exec_prefix)/usr/bin/firewall-cmd -q --reload"
+      contain => shell_firewalld_json_command;
+}
+
+#
+# Create a firewalld direct
+#
+bundle agent create_firewalld_direct(data)
+{
+  files:
+      # Generate firewalld direct configuration file from template
+      "$(firewalld_config.directory)/direct.xml"
+      create          => "true",
+      handle          => "created_firewalld_direct.xml",
+      pathtype        => "literal",
+      edit_template   => "$(firewalld_config.template_directory)/direct.xml.mustache",
+      perms           => mog("0640","$(this.promiser_uid)","$(this.promiser_gid)"),
+      classes         => if_repaired("repaired_firewalld"),
+      template_method => "mustache",
+      template_data   => mergedata(data),
+      comment         => "Create firewalld direct.xml";
+
+  commands:
+    repaired_firewalld::
+      "$(firewalld_config.exec_prefix)/usr/bin/firewall-cmd -q --reload"
+      contain => shell_firewalld_json_command;
+}
+
+#
+# Delete a firewalld direct
+#
+bundle agent delete_firewalld_direct
+{
+  files:
+      "$(firewalld_config.directory)/direct.xml"
+      delete   => tidy,
+      handle   => "deleted_firewalld_direct",
+      pathtype => "literal",
+      classes  => if_repaired("repaired_firewalld"),
+      comment  => "Delete firewalld direct.xml";
+
+  commands:
+    repaired_firewalld::
+      "$(firewalld_config.exec_prefix)/usr/bin/firewall-cmd -q --reload"
+      contain => shell_firewalld_json_command;
+}
+
+#
+# Create a firewalld lockdown-whitelist configuration
+#
+bundle agent create_firewalld_lockdown_whitelist(data)
+{
+  files:
+      # Generate firewalld lockdown whitelist configuration file from template
+      "$(firewalld_config.directory)/lockdown-whitelist.xml"
+      create          => "true",
+      handle          => "created_firewalld_lockdown-whitelist.xml",
+      pathtype        => "literal",
+      edit_template   => "$(firewalld_config.template_directory)/lockdown-whitelist.xml.mustache",
+      perms           => mog("0640","$(this.promiser_uid)","$(this.promiser_gid)"),
+      classes         => if_repaired("repaired_firewalld"),
+      template_method => "mustache",
+      template_data   => mergedata(data),
+      comment         => "Create firewalld lockdown-whitelist.xml";
+
+  commands:
+    repaired_firewalld::
+      "$(firewalld_config.exec_prefix)/usr/bin/firewall-cmd -q --reload"
+      contain => shell_firewalld_json_command;
+}
+
+#
+# Delete a firewalld lockdown-whitelist
+#
+bundle agent delete_firewalld_lockdown_whitelist
+{
+  files:
+      "$(firewalld_config.directory)/lockdown-whitelist.xml"
+      delete   => tidy,
+      handle   => "deleted_firewalld_lockdown-whitelist",
+      pathtype => "literal",
+      classes  => if_repaired("repaired_firewalld"),
+      comment  => "Delete firewalld lockdown-whitelist.xml";
+
+  commands:
+    repaired_firewalld::
+      "$(firewalld_config.exec_prefix)/usr/bin/firewall-cmd -q --reload"
+      contain => shell_firewalld_json_command;
+}
+
+#
+# Manage firewalld.conf
+#
+bundle agent firewalld_configuration(data)
+{
+  files:
+      # Generate firewalld configuration file from template
+      "$(firewalld_config.directory)/firewalld.conf"
+      create          => "true",
+      handle          => "configured_firewalld",
+      perms           => mog("0644","$(this.promiser_uid)","$(this.promiser_gid)"),
+      edit_template   => "$(firewalld_config.template_directory)/firewalld.conf.mustache",
+      template_method => "mustache",
+      template_data   => mergedata(data),
+      classes         => if_repaired("repaired_firewalld"),
+      pathtype        => "literal",
+      comment         => "Configure firewalld.conf";
+
+  commands:
+    repaired_firewalld::
+      "$(firewalld_config.exec_prefix)/sbin/service firewalld restart"
+      contain => shell_firewalld_json_command;
+}
+
+#
+# Create a firewalld RichRules
+#
+bundle agent create_firewalld_richrules(address,protocol,port)
+{
+
+ # Exemple : address=10.15.28.153/32 ou /24 protocol=tcp ou udp  port=80 ou 80-96
+ # "add_rich_rules_xxx"      usebundle => create_firewalld_richrules("address","protocol","port");
+
+ commands:
+
+  "/bin/firewall-cmd -q --permanent --zone=public --add-rich-rule='rule family=ipv4 source address=$(address) port protocol=$(protocol) port=$(port) accept'"
+    contain => shell_firewalld_json_command;
+
+  "/bin/firewall-cmd -q --reload"
+    contain => shell_firewalld_json_command;
+}
+
+#
+# Delete a firewalld RichRules
+#
+bundle agent delete_firewalld_richrules(address,protocol,port)
+{
+
+ # Exemple : address=10.15.28.153/32 ou /24 protocol=tcp ou udp  port=80 ou 80-96
+ # "remove_rich_rules_xxx"      usebundle => delete_firewalld_richrules("address","protocol","port");
+
+ commands:
+
+  "/bin/firewall-cmd -q --permanent --zone=public --remove-rich-rule='rule family=ipv4 source address=$(address) port protocol=$(protocol) port=$(port) accept'"
+    contain => shell_firewalld_json_command;
+
+  "/bin/firewall-cmd -q --reload"
+    contain => shell_firewalld_json_command;
+
+}
+
+body contain shell_firewalld_json_command {
+     useshell    => "yes";
+}
